@@ -1,0 +1,166 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+template <typename PairTKey, typename PairTValue>
+class KeyValuePair {
+public:
+    PairTKey key;
+    PairTValue value;
+
+    KeyValuePair() : key(), value() {}
+    KeyValuePair(const PairTKey key, const PairTValue value) : key(key), value(value) {}
+
+    PairTValue& operator[](PairTKey key) { return value; }
+};
+
+template <typename TKey, typename TValue>
+class Dictionary {
+public:
+    Dictionary() {
+        _pairs = new KeyValuePair<TKey, TValue>[_capacity];
+    }
+
+    TValue& operator[](const TKey key) {
+        for (size_t i = 0; i < _count; i++) {
+            if (_pairs[i].key == key)
+                return _pairs[i].value;
+        }
+        add(key, TValue());
+        return _pairs[_count - 1].value;
+    }
+
+    void add(const KeyValuePair<TKey, TValue> pair) {
+        if (_count == _capacity) {
+            _capacity *= 2;
+            KeyValuePair<TKey, TValue>* newPairs = new KeyValuePair<TKey, TValue>[_capacity];
+            for (size_t i = 0; i < _count; i++) {
+                newPairs[i] = _pairs[i];
+            }
+            delete[] _pairs;
+            _pairs = newPairs;
+        }
+
+        _pairs[_count++] = pair;
+    }
+
+    void add(const TKey key, const TValue value) {
+        add({ key, value });
+    }
+
+    size_t count() const { return _count; }
+    size_t capacity() const { return _capacity; }
+
+    TKey* keys() {
+        TKey* result = new TKey[_count];
+        for (size_t i = 0; i < _count; i++) {
+            result[i] = _pairs[i].key;
+        }
+        return result;
+    }
+
+    TValue* values() {
+        TValue* result = new TValue[_count];
+        for (size_t i = 0; i < _count; i++) {
+            result[i] = _pairs[i].value;
+        }
+        return result;
+    }
+
+    KeyValuePair<TKey, TValue>* items() {
+        KeyValuePair<TKey, TValue>* result = new KeyValuePair<TKey, TValue>[_count];
+        for (size_t i = 0; i < _count; i++) {
+            result[i] = _pairs[i];
+        }
+        return result;
+    }
+
+    void clear() {
+        delete[] _pairs;
+        _pairs = new KeyValuePair<TKey, TValue>[_capacity];
+        _count = 0;
+    }
+
+    bool containsKey(const TKey key) const {
+        for (size_t i = 0; i < _count; i++) {
+            if (_pairs[i].key == key)
+                return true;
+        }
+        return false;
+    }
+
+    bool containsValue(const TValue value) const {
+        for (size_t i = 0; i < _count; i++) {
+            if (_pairs[i].value == value)
+                return true;
+        }
+        return false;
+    }
+
+    bool remove(const TKey key) {
+        for (size_t i = 0; i < _count; i++) {
+            if (_pairs[i].key == key) {
+                for (size_t j = i; j < _count - 1; j++) {
+                    _pairs[j] = _pairs[j + 1];
+                }
+                _count--;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    ~Dictionary() {
+        delete[] _pairs;
+    }
+
+private:
+    KeyValuePair<TKey, TValue>* _pairs = nullptr;
+    size_t _count = 0;
+    size_t _capacity = 5;
+};
+
+int main() {
+    Dictionary<int, string> dict;
+    dict.add(1, "Apple");
+    cout << dict[1] << endl;  
+    dict[1] = "Banana";
+    cout << dict[1] << endl;  
+
+    dict.add(2, "Orange");
+    dict.add(3, "Grapes");
+
+    cout << "Keys: ";
+    int* keys = dict.keys();
+    for (size_t i = 0; i < dict.count(); i++) {
+        cout << keys[i] << " ";
+    }
+    cout << endl;
+
+    cout << "Values: ";
+    string* values = dict.values();
+    for (size_t i = 0; i < dict.count(); i++) {
+        cout << values[i] << " ";
+    }
+    cout << endl;
+
+    dict.remove(2);
+
+    cout << "2 ci keyi sildikden sonra keyler:" << endl;
+    cout << "Keys: ";
+    keys = dict.keys();
+    for (size_t i = 0; i < dict.count(); i++) {
+        cout << keys[i] << " ";
+    }
+    cout << endl;
+
+    cout << "Values: ";
+    values = dict.values();
+    for (size_t i = 0; i < dict.count(); i++) {
+        cout << values[i] << " ";
+    }
+    cout << endl;
+
+    
+}
